@@ -15,6 +15,8 @@ A Telegram chatbot that integrates with EPAM AI DIAL SDK to provide AI-powered r
 ### 1. Install Dependencies
 
 ```bash
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -42,8 +44,18 @@ DIAL_MODEL=chatgpt-4
 ### 4. Run the Bot
 
 ```bash
+# Recommended: Enhanced runner with connection testing
+python run_bot.py
+
+# Alternative: Run directly (basic version)
 python bot.py
 ```
+
+**Note**: The enhanced runner (`run_bot.py`) is recommended as it:
+- Tests DIAL API connection before starting
+- Shows model capabilities and configuration
+- Provides better error handling and logging
+- Properly manages async/sync interactions
 
 ## Usage
 
@@ -51,6 +63,53 @@ python bot.py
 2. Send `/start` to initialize
 3. Send any message to get AI responses
 4. Use `/help` for available commands
+
+### Available Commands
+
+- `/start` - Initialize the bot
+- `/help` - Show help message
+- `/test` - Test connection to AI DIAL
+- `/models` - List available models (first 20)
+- `/info` - Show current model information and capabilities
+
+### Testing the Implementation
+
+You can test the DIAL client independently:
+
+```bash
+# Test basic functionality
+python test_dial_client.py
+
+# Test different model configurations
+python test_different_models.py
+
+# Analyze model features from the API
+python analyze_model_features.py
+
+# Run comprehensive test of all functionality
+python test_complete_implementation.py
+```
+
+### Model Support
+
+The implementation automatically handles different model types and their specific requirements:
+
+**Reasoning Models** (no temperature support):
+- GPT-5 series (gpt-5-nano, gpt-5-mini, etc.)
+- OpenAI o1/o3/o4 series
+- DeepSeek R1 models
+
+**Conversational Models** (full parameter support):
+- GPT-4 series
+- GPT-3.5 series
+- Anthropic Claude models
+- Google Gemini models (uses `max_output_tokens`)
+
+**Features:**
+- Automatic parameter selection based on model capabilities
+- Proper error handling for unsupported parameters
+- Token usage logging
+- Model capability detection
 
 ## Configuration
 
@@ -62,27 +121,73 @@ python bot.py
 ## Project Structure
 
 ```
-├── bot.py              # Main bot application
-├── dial_client.py      # AI DIAL SDK client wrapper
-├── config.py           # Configuration management
-├── requirements.txt    # Python dependencies
-├── .env.example        # Environment variables template
-└── README.md          # This file
+├── bot.py                      # Main bot application
+├── dial_client.py              # AI DIAL API client implementation
+├── model_config.py             # Model configuration and parameter handling
+├── config.py                   # Configuration management
+├── run_bot.py                  # Enhanced bot runner with connection testing
+├── test_dial_client.py         # Basic functionality test
+├── test_different_models.py    # Model configuration test
+├── test_complete_implementation.py # Comprehensive functionality test
+├── analyze_model_features.py   # Model analysis utility
+├── requirements.txt            # Python dependencies
+├── .env.example                # Environment variables template
+└── README.md                   # This file
 ```
 
-## Important Notes
+## DIAL SDK Integration
 
-⚠️ **DIAL SDK Integration**: The `dial_client.py` file contains a placeholder implementation. You'll need to update it based on the actual aidial-sdk documentation and API structure.
+✅ **DIAL Client Implementation**: The `dial_client.py` file now contains a fully functional implementation that communicates directly with the AI DIAL API using HTTP requests.
 
-To properly implement the DIAL client:
+**Key Features:**
+- Direct HTTP communication with DIAL API using OpenAI-compatible endpoints
+- Model-specific parameter handling (different models support different parameters)
+- Proper error handling and logging
+- Connection testing and model listing capabilities
+- Async/await support for optimal performance
 
-1. Check the [aidial-sdk documentation](https://github.com/epam/ai-dial-sdk)
-2. Update the `send_message` method in `dial_client.py`
-3. Implement proper authentication and request formatting
+**Note**: The `aidial-sdk` package is designed for creating DIAL applications, not consuming them. This implementation uses direct HTTP requests to the DIAL API instead.
 
 ## Troubleshooting
 
-- Ensure all environment variables are set correctly
+### Common Issues
+
+**Event Loop Errors**:
+- Use `python run_bot.py` instead of `python bot.py` for better async handling
+- The enhanced runner properly manages async/sync interactions
+
+**Connection Issues**:
+- Ensure all environment variables are set correctly in `.env`
 - Check that your Telegram bot token is valid
 - Verify AI DIAL API credentials and endpoint
+- Test connection with: `python test_dial_client.py`
+
+**Model Parameter Errors**:
+- Different models support different parameters (temperature, token limits)
+- The implementation automatically handles model-specific requirements
+- Use `/info` command in the bot to see current model capabilities
+
+**Bot Not Responding**:
 - Check logs for detailed error information
+- Verify the bot has proper permissions in Telegram
+- Test DIAL API connection with `/test` command
+
+### Debug Commands
+
+```bash
+# Test DIAL API connection
+python test_dial_client.py
+
+# Test different model configurations
+python test_different_models.py
+
+# Run comprehensive functionality test
+python test_complete_implementation.py
+```
+
+# Notes
+## Get list of models from AI Dial
+
+```shell
+curl -s "${DIAL_API_URL}/openai/models" -H "Api-Key: $DIAL_API_KEY"
+```

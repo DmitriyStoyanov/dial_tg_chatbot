@@ -23,6 +23,9 @@ class TelegramDialBot:
         # Commands
         self.application.add_handler(CommandHandler("start", self.start_command))
         self.application.add_handler(CommandHandler("help", self.help_command))
+        self.application.add_handler(CommandHandler("test", self.test_command))
+        self.application.add_handler(CommandHandler("models", self.models_command))
+        self.application.add_handler(CommandHandler("info", self.info_command))
 
         # Messages
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
@@ -42,12 +45,65 @@ class TelegramDialBot:
         help_message = (
             "🔧 Available Commands:\n\n"
             "/start - Start the bot\n"
-            "/help - Show this help message\n\n"
+            "/help - Show this help message\n"
+            "/test - Test connection to AI DIAL\n"
+            "/models - List available models\n"
+            "/info - Show current model information\n\n"
             "💬 How to use:\n"
             "Simply send me any text message and I'll respond using AI DIAL API!\n\n"
             f"🤖 Current Model: {config.DIAL_MODEL}"
         )
         await update.message.reply_text(help_message)
+
+    async def test_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /test command"""
+        await update.message.reply_text("🔍 Testing connection to AI DIAL...")
+
+        success = await self.dial_client.test_connection()
+        if success:
+            await update.message.reply_text("✅ Connection to AI DIAL is working!")
+        else:
+            await update.message.reply_text("❌ Failed to connect to AI DIAL. Please check the configuration.")
+
+    async def models_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /models command"""
+        await update.message.reply_text("📋 Fetching available models...")
+
+        models = await self.dial_client.list_models()
+        if models:
+            # Show first 20 models to avoid message length limits
+            models_to_show = models[:20]
+            models_text = "\n".join([f"• {model}" for model in models_to_show])
+
+            message = f"🤖 Available Models ({len(models)} total, showing first {len(models_to_show)}):\n\n{models_text}"
+
+            if len(models) > 20:
+                message += f"\n\n... and {len(models) - 20} more models"
+
+            message += f"\n\n📌 Current model: {config.DIAL_MODEL}"
+
+            await update.message.reply_text(message)
+        else:
+            await update.message.reply_text("❌ Failed to fetch models list.")
+
+    async def info_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /info command"""
+        model_info = self.dial_client.get_model_info()
+
+        info_message = (
+            f"🤖 **Current Model Information**\n\n"
+            f"**Model:** `{model_info['model']}`\n"
+            f"**Supports Temperature:** {'✅ Yes' if model_info['supports_temperature'] else '❌ No'}\n"
+            f"**Token Parameter:** `{model_info['token_param']}`\n"
+            f"**Reasoning Model:** {'🧠 Yes' if model_info['is_reasoning_model'] else '💬 No'}\n\n"
+        )
+
+        if model_info['is_reasoning_model']:
+            info_message += "🧠 This is a reasoning model that excels at complex problem-solving, math, and coding tasks."
+        else:
+            info_message += "💬 This is a general-purpose conversational model."
+
+        await update.message.reply_text(info_message, parse_mode='Markdown')
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle incoming text messages"""
@@ -74,7 +130,7 @@ class TelegramDialBot:
             await update.message.reply_text("An error occurred while processing your message.")
 
     def run(self):
-        """Start the bot"""
+        """Start the bot (synchronous version)"""
         logger.info("Starting Telegram DIAL Bot...")
         logger.info(f"Using model: {config.DIAL_MODEL}")
 
