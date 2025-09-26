@@ -49,6 +49,11 @@ python run_bot.py
 
 # Alternative: Run directly (basic version)
 python bot.py
+
+# Debug mode: Run with enhanced logging and API request/response details
+python run_debug.py
+# OR
+python bot.py --debug --log-level DEBUG
 ```
 
 **Note**: The enhanced runner (`run_bot.py`) is recommended as it:
@@ -56,6 +61,13 @@ python bot.py
 - Shows model capabilities and configuration
 - Provides better error handling and logging
 - Properly manages async/sync interactions
+
+**Debug Mode**: Use `python run_debug.py` or `python bot.py --debug` to enable:
+- Detailed API request/response logging
+- Enhanced error reporting with stack traces
+- Request headers and payload logging
+- Response content preview
+- Network error details
 
 ## Usage
 
@@ -71,6 +83,7 @@ python bot.py
 - `/test` - Test connection to AI DIAL
 - `/models` - List available models (first 20)
 - `/info` - Show current model information and capabilities
+- `/debug` - Show debug information and current configuration
 
 ### Testing the Implementation
 
@@ -183,6 +196,37 @@ python test_different_models.py
 
 # Run comprehensive functionality test
 python test_complete_implementation.py
+
+# Run bot in debug mode with detailed logging
+python run_debug.py
+```
+
+### Debug Mode Features
+
+When running in debug mode (`python run_debug.py` or `python bot.py --debug`), you'll see:
+
+**Console Logging:**
+- 🚀 API request details (URL, headers, payload)
+- 📡 Response status and headers
+- 📥 Full API response data
+- 📊 Token usage information
+- 🔍 Detailed error messages with stack traces
+- 📤 Response content preview
+
+**Telegram Commands:**
+- `/debug` - Shows current debug status and configuration
+- Enhanced error messages in chat
+- Debug mode indicator in `/start` and `/help` commands
+
+**Example Debug Output:**
+```
+2025-01-26 17:17:24,164 - dial_client - INFO - 🚀 Sending request to https://api.example.com/openai/deployments/chatgpt-4/chat/completions for user 329696209
+2025-01-26 17:17:24,164 - dial_client - DEBUG - 📤 Request headers: {"Content-Type": "application/json", "Api-Key": "***"}
+2025-01-26 17:17:24,164 - dial_client - DEBUG - 📤 Request data: {"messages": [{"role": "user", "content": "Hello"}], "max_tokens": 1000, "temperature": 0.7}
+2025-01-26 17:17:24,165 - dial_client - INFO - 📡 Received response with status 200 for user 329696209
+2025-01-26 17:17:24,165 - dial_client - DEBUG - 📥 Full response data: {"choices": [{"message": {"content": "Hello! How can I help you today?"}}], "usage": {"prompt_tokens": 10, "completion_tokens": 8, "total_tokens": 18}}
+2025-01-26 17:17:24,165 - dial_client - INFO - 📊 Token usage - Prompt: 10, Completion: 8, Total: 18
+2025-01-26 17:17:24,165 - dial_client - INFO - ✅ Successfully got response for user 329696209
 ```
 
 # Notes
